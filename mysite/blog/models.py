@@ -3,7 +3,15 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 # Create your models here.
 
+# PublishedManager only shows published posts.
+class PublishedManager(models.Manager):
+  def get_queryset(self):
+    return super(PublishedManager,self).get_queryset().filter(status='published')
+
 class Post(models.Model):
+  # These are the managers, which are a interface through to a database query operation
+  objects = models.Manager()
+  published = PublishedManager()
   STATUS_CHOICES = (
       ('draft', 'DRAFT'),
       ('published', 'PUBLISHED'),
