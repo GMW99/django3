@@ -3,6 +3,29 @@ from django.core.paginator import Paginator, EmptyPage,\
                                   PageNotAnInteger
 from django.views.generic import ListView
 from .models import Post
+from .forms import EmailPostForm
+
+"""
+This view works as follows:
+
+"""
+def post_share(request,post_id):
+  # Retrive post by id and make sure its published
+  post = get_object_or_404(Post,id=post_id, status='published')
+  if request.method == 'POST':
+    # Create form with inputs
+    form = EmailPostForm(request.POST)
+    if form.is_valid():
+      # Form fields passed validation check
+      cd = form.cleaned_data
+      # create dictionary with  clean data
+      # ... send data
+  else:
+    # When loaded (GET request) create a new form instance, will be used for template
+    form = EmailPostForm()
+  return render(request,'blog/post/share.html', {'post':post,
+                                                 'form': form})
+
 
 def post_list(request):
   object_list = Post.published.all()
