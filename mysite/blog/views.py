@@ -13,6 +13,7 @@ This view works as follows:
 def post_share(request,post_id):
   # Retrive post by id and make sure its published
   post = get_object_or_404(Post,id=post_id, status='published')
+  sent = False
   if request.method == 'POST':
     # Create form with inputs
     form = EmailPostForm(request.POST)
