@@ -4,13 +4,13 @@ from django.core.paginator import Paginator, EmptyPage,\
 from django.core.mail import send_mail
 from django.views.generic import ListView
 from django.db.models import Count
+from django.contrib.postgres.search import SearchVector
 from taggit.models import Tag
 from .models import Post, Comment
-from .forms import EmailPostForm, CommentForm
+from .forms import EmailPostForm, CommentForm, SearchForm
 
 """
 This view works as follows:
-
 """
 def post_share(request,post_id):
   # Retrive post by id and make sure its published
@@ -37,7 +37,6 @@ def post_share(request,post_id):
   return render(request,'blog/post/share.html', {'post':post,
                                                  'form': form,
                                                  'sent': sent})
-
 
 def post_list(request, tag_slug=None):
   object_list = Post.published.all()
@@ -89,6 +88,23 @@ def post_detail(request, year, month, day, post):
                  'new_comment': new_comment,
                  'comment_form': comment_form,
                  'similar_posts': similar_posts})
+
+def post_search(request):
+  form = SearchForm()
+  query = None
+  results = []
+  if 'query' in request.GET:
+    form = SearchForm(request.GET)
+    if form.is_valid():
+      query = form.cleaned_data['query']
+      results = Post.published.annotate(
+                search=SearchVector('title', 'body'),
+                ).filter(search=query)
+  return render(request,
+                'blog/post/search.html',
+                {'form': form,
+                'query': query,
+                'results': results})
 
 # Class based list view, this is analogous with def post_list
 class PostListView(ListView):
